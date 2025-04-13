@@ -1,7 +1,6 @@
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
 import { useState } from "react";
-import { nanoid } from 'nanoid'
 import { CommandConfig } from '../utils/types'
 
 const modifierOptions = [
