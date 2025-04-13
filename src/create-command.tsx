@@ -1,7 +1,9 @@
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
 import { useState } from "react";
+import { nanoid } from "nanoid";
 import { CommandConfig } from '../utils/types'
+import { storage } from "../utils";
 
 const modifierOptions = [
   ['command', 'Command (⌘)'],
@@ -10,12 +12,27 @@ const modifierOptions = [
   ['shift', 'Shift (⇧)'],
 ];
 
-export default function Command() {
+export async function generateUniqueId(): Promise<string> {
+  const existingIds = await storage.getCommandIds();
+
+  let newId = nanoid();
+  while (existingIds.includes(newId)) {
+    newId = nanoid();
+  }
+
+  return newId;
+}
+
+export default function CreateCommand() {
   const { pop } = useNavigation()
   const [shortcutKey, setShortcutKey] = useState('')
+  const [commandKeys, setCommandKeys] = useState('')
 
   const { handleSubmit, itemProps: items } = useForm<Omit<CommandConfig, 'id'>>({
-    onSubmit(values) {
+    onSubmit: async (values) => {
+      const id = await generateUniqueId()
+      storage.saveCommand({ id, ...values });
+
       showToast({
         style: Toast.Style.Success,
         title: "Yay!",
@@ -68,7 +85,7 @@ export default function Command() {
         info="Key to trigger command"
         {...items.shortcutKey}
         value={shortcutKey}
-        onChange={v => setShortcutKey(v.substring(v.length - 1, v.length))}
+        onChange={v => setShortcutKey(v.substring(v.length - 1, v.length)?.toUpperCase())}
       />
 
       <Form.Separator />
@@ -89,6 +106,8 @@ export default function Command() {
         placeholder="e.g., abc"
         info="Enter the key/s that will be run with above modifiers"
         {...items.commandKeys}
+        value={commandKeys}
+        onChange={v => setCommandKeys(v.toUpperCase())}
       />
     </Form>
   );
