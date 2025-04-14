@@ -1,45 +1,14 @@
-import { Action, ActionPanel, closeMainWindow, confirmAlert, List, useNavigation } from "@raycast/api";
-import { runAppleScript } from "@raycast/utils";
 import { useEffect, useMemo, useState } from "react";
-import { CommandConfig, storage } from "../utils";
+import { Action, ActionPanel, confirmAlert, List, useNavigation } from "@raycast/api";
+import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
 
-const glyphs: { [key: string]: string } = {
-  command: '⌘',
-  control: '⌃',
-  option: '⌥',
-  shift: '⇧',
-}
-
-function getGlyphs(modifiers: string[]) {
-  const mods = modifiers.map(mod => glyphs[mod])
-  return mods.toString().replaceAll(',', '')
-}
-
-async function runCommand(
-  command: CommandConfig
-): Promise<void> {
-  const mods = command.modifiers.length > 0
-    ? `using {${command.modifiers.join(" down, ")} down}`
-    : "";
-
-  await runAppleScript(`
-    tell application "System Events"
-      keystroke "${command.commandKeys}" ${mods}
-    end tell
-  `);
-
-  closeMainWindow();
-}
-
 export default function ShowCommands() {
-  console.log('RENDER!')
   const { push } = useNavigation()
   const [loading, setLoading] = useState(true)
   const [commands, setCommands] = useState<CommandConfig[]>([])
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const placeholder = isSearchMode ? 'Search for command or press tab to toggle search mode' : 'Press key to run command or tab to search'
 
   async function loadData() {
     setLoading(true);
@@ -53,20 +22,34 @@ export default function ShowCommands() {
   }, [])
 
   const commandItems = useMemo(() => {
-    if (searchValue?.length) {
-      return commands.filter(i => (
-        i.title.toLowerCase().includes(searchValue)
-        || i.description.toLowerCase().includes(searchValue)
-      ))
-    }
+    if (!searchValue?.length) return commands;
 
-    return commands;
+    return commands.filter(i => (
+      i.title.toLowerCase().includes(searchValue)
+      || i.description.toLowerCase().includes(searchValue)
+    ))
   }, [searchValue, commands])
+
+  const createAndToggleActions = [
+    <Action
+      title="Create command"
+      onAction={() => push(<CreateCommand />, loadData)}
+    />,
+    <Action
+      title="Toggle search mode"
+      shortcut={{ modifiers: [], key: "tab" }}
+      onAction={() => setIsSearchMode(prev => !prev)}
+    />
+  ]
 
   return (
     <List
       isLoading={loading}
-      searchBarPlaceholder={placeholder}
+      searchBarPlaceholder={
+        isSearchMode
+          ? 'Search for command or press tab to toggle search mode'
+          : 'Press key to run command or tab to search'
+      }
       onSearchTextChange={val => {
         if (isSearchMode) {
           setSearchValue(val)
@@ -75,42 +58,24 @@ export default function ShowCommands() {
 
         const command = commands.filter(item => item.shortcutKey === val)?.[0];
         if (!command) return;
-        runCommand(command)
+        runCommandConfig(command)
       }}
     >
-      {!commandItems?.length && !searchValue ? (
+      {!commandItems?.length ? (
         <List.EmptyView
-          title="No commands configured"
-          description='Create a new command to get started'
-          actions={
-            <ActionPanel>
-              <Action
-                title="Create command"
-                onAction={() => push(<CreateCommand />, loadData)}
-              />
-              <Action
-                title="Toggle search mode"
-                shortcut={{ modifiers: [], key: "tab" }}
-                onAction={() => setIsSearchMode(prev => !prev)}
-              />
-            </ActionPanel>
+          title={
+            searchValue?.length
+              ? 'No matching commands'
+              : 'No commands configured'
           }
-        />
-      ) : !commandItems?.length ? (
-        <List.EmptyView
-          title="No matching commands"
-          description='Command matching your search could not be found'
+          description={
+            searchValue?.length
+              ? 'Command matching your search could not be found'
+              : 'Create a new command to get started'
+          }
           actions={
             <ActionPanel>
-              <Action
-                title="Create command"
-                onAction={() => push(<CreateCommand />, loadData)}
-              />
-              <Action
-                title="Toggle search mode"
-                shortcut={{ modifiers: [], key: "tab" }}
-                onAction={() => setIsSearchMode(prev => !prev)}
-              />
+              {createAndToggleActions}
             </ActionPanel>
           }
         />
@@ -120,15 +85,15 @@ export default function ShowCommands() {
           title={item.title}
           subtitle={item.description}
           accessories={[{
-            text: `${getGlyphs(item.modifiers)}${item.commandKeys.toUpperCase()}`,
+            text: `${getModifierGlyph(item.modifiers)}${item.commandKeys}`,
           }, {
-            tag: item.shortcutKey?.toUpperCase()
+            tag: item.shortcutKey
           }]}
           actions={
             <ActionPanel>
               <Action
                 title="Run command"
-                onAction={() => runCommand(item)}
+                onAction={() => runCommandConfig(item)}
               />
               <Action
                 title="Edit command"
@@ -144,25 +109,16 @@ export default function ShowCommands() {
                     message: 'Are you sure you want to delete this command configuration? This action cannot be undone.'
                   };
                   if (await confirmAlert(deleteConfirmation)) {
-                    storage.deleteCommand(item.id)
-                    loadData()
+                    await storage.deleteCommand(item.id)
+                    await loadData()
                   }
                 }}
               />
-              <Action
-                title="Create new command"
-                onAction={() => push(<CreateCommand />)}
-              />
-              <Action
-                title="Toggle search mode"
-                shortcut={{ modifiers: [], key: "tab" }}
-                onAction={() => setIsSearchMode(prev => !prev)}
-              />
+              {createAndToggleActions}
             </ActionPanel>
           }
         />
-      ))
-      }
+      ))}
     </List>
   );
 }

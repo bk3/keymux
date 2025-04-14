@@ -31,12 +31,12 @@ export default function CreateCommand() {
   const { handleSubmit, itemProps: items } = useForm<Omit<CommandConfig, 'id'>>({
     onSubmit: async (values) => {
       const id = await generateUniqueId()
-      storage.saveCommand({ id, ...values });
+      await storage.saveCommand({ id, ...values });
 
       showToast({
         style: Toast.Style.Success,
-        title: "Yay!",
-        message: `${values.title} created`,
+        title: "Success!",
+        message: `${values.title} command created`,
       });
 
       pop();
