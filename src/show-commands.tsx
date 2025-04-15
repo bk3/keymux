@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Action, ActionPanel, confirmAlert, List, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, List, confirmAlert, useNavigation } from "@raycast/api";
 import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
+import { isSea } from "node:sea";
 
 export default function ShowCommands() {
   const { push } = useNavigation()
@@ -30,25 +31,15 @@ export default function ShowCommands() {
     ))
   }, [searchValue, commands])
 
-  const createAndToggleActions = [
-    <Action
-      title="Create command"
-      onAction={() => push(<CreateCommand />, loadData)}
-    />,
-    <Action
-      title="Toggle search mode"
-      shortcut={{ modifiers: [], key: "tab" }}
-      onAction={() => setIsSearchMode(prev => !prev)}
-    />
-  ]
-
   return (
     <List
       isLoading={loading}
       searchBarPlaceholder={
-        isSearchMode
-          ? 'Search for command or press tab to toggle search mode'
-          : 'Press key to run command or tab to search'
+        !commandItems?.length && !isSearchMode
+          ? 'Press "enter" to create a new command'
+          : isSearchMode
+            ? 'Search for command or press tab to toggle search mode'
+            : 'Press key to run command or tab to search'
       }
       onSearchTextChange={val => {
         if (isSearchMode) {
@@ -56,7 +47,7 @@ export default function ShowCommands() {
           return;
         }
 
-        const command = commands.filter(item => item.shortcutKey === val)?.[0];
+        const command = commands.filter(c => c.shortcutKey === val.toUpperCase())?.[0];
         if (!command) return;
         runCommandConfig(command)
       }}
@@ -75,32 +66,45 @@ export default function ShowCommands() {
           }
           actions={
             <ActionPanel>
-              {createAndToggleActions}
+              <Action
+                key='create-command'
+                title="Create command"
+                onAction={() => push(<CreateCommand />, loadData)}
+              />
+              <Action
+                key='toggle-search'
+                title="Toggle search mode"
+                shortcut={{ modifiers: [], key: "tab" }}
+                onAction={() => setIsSearchMode(prev => !prev)}
+              />
             </ActionPanel>
           }
         />
-      ) : commandItems.map((item) => (
+      ) : commandItems.map((command) => (
         <List.Item
-          key={item.id}
-          title={item.title}
-          subtitle={item.description}
+          key={command.id}
+          title={command.title}
+          subtitle={command.description}
           accessories={[{
-            text: `${getModifierGlyph(item.modifiers)}${item.commandKeys}`,
+            text: `${getModifierGlyph(command.modifiers)}${command.commandKeys}`,
           }, {
-            tag: item.shortcutKey
+            tag: command.shortcutKey
           }]}
           actions={
             <ActionPanel>
               <Action
+                key='run-command'
                 title="Run command"
-                onAction={() => runCommandConfig(item)}
+                onAction={() => runCommandConfig(command)}
               />
               <Action
+                key='edit-command'
                 title="Edit command"
-                onAction={() => {
-                }}
+                shortcut={{ modifiers: ['ctrl'], key: "e" }}
+                onAction={() => push(<CreateCommand id={command.id} />, loadData)}
               />
               <Action
+                key='delete-command'
                 title="Delete command"
                 shortcut={{ modifiers: ['ctrl'], key: "x" }}
                 onAction={async () => {
@@ -109,12 +113,23 @@ export default function ShowCommands() {
                     message: 'Are you sure you want to delete this command configuration? This action cannot be undone.'
                   };
                   if (await confirmAlert(deleteConfirmation)) {
-                    await storage.deleteCommand(item.id)
+                    await storage.deleteCommand(command.id)
                     await loadData()
                   }
                 }}
               />
-              {createAndToggleActions}
+              <Action
+                key='create-new-command'
+                title="Create new command"
+                shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
+                onAction={() => push(<CreateCommand />, loadData)}
+              />
+              <Action
+                key='toggle-search'
+                title="Toggle search mode"
+                shortcut={{ modifiers: [], key: "tab" }}
+                onAction={() => setIsSearchMode(prev => !prev)}
+              />
             </ActionPanel>
           }
         />

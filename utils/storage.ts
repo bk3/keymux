@@ -1,23 +1,24 @@
 import { LocalStorage } from "@raycast/api";
 import { CommandConfig } from './types';
+import { generateId } from "./generateId";
 
-// Constants
 const COMMAND_KEY_PREFIX = "command-";
 const COMMAND_IDS_KEY = "command-ids";
 
-export async function saveCommand(command: CommandConfig): Promise<void> {
+export async function saveCommand(data: Omit<CommandConfig, 'id'>): Promise<void> {
   try {
-    const key = `${COMMAND_KEY_PREFIX}${command.id}`;
+    const id = await generateId()
+    const command = { id, ...data }
+    const key = `${COMMAND_KEY_PREFIX}${id}`;
     await LocalStorage.setItem(key, JSON.stringify(command));
 
-    // Update the index of IDs if needed
     const ids = await getCommandIds();
     if (!ids.includes(command.id)) {
       ids.push(command.id);
       await LocalStorage.setItem(COMMAND_IDS_KEY, JSON.stringify(ids));
     }
   } catch (error) {
-    throw new Error(`Unable to save command: ${command.id}`);
+    throw new Error(`Unable to save command: ${data.title}`);
   }
 }
 
@@ -44,15 +45,11 @@ export async function getAllCommands(): Promise<CommandConfig[]> {
   try {
     const ids = await getCommandIds();
 
-    if (ids.length === 0) {
-      return [];
-    }
+    if (!ids.length) return [];
 
-    // Use Promise.all for parallel execution
     const commandPromises = ids.map(id => getCommand(id));
     const results = await Promise.all(commandPromises);
 
-    // Filter out null/undefined results
     return results.filter((command): command is CommandConfig =>
       command !== null && command !== undefined);
   } catch (error) {
@@ -69,11 +66,19 @@ export async function updateCommand(id: string, updates: Partial<CommandConfig>)
     }
 
     const updatedCommand = { ...command, ...updates };
-    await saveCommand(updatedCommand);
+
+    console.log({ updatedCommand })
+
+    // Save directly with the existing ID instead of calling saveCommand
+    const key = `${COMMAND_KEY_PREFIX}${id}`;
+    await LocalStorage.setItem(key, JSON.stringify(updatedCommand));
+
+    // No need to update the IDs list since we're keeping the same ID
   } catch (error) {
     throw error instanceof Error ? error : new Error(`Unable to update command: ${id}`);
   }
 }
+
 
 export async function deleteCommand(id: string): Promise<void> {
   try {
