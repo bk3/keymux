@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Action, ActionPanel, List, confirmAlert, useNavigation } from "@raycast/api";
 import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
-import { isSea } from "node:sea";
 
 export default function ShowCommands() {
   const { push } = useNavigation()
@@ -41,7 +40,8 @@ export default function ShowCommands() {
             ? 'Search for command or press tab to toggle search mode'
             : 'Press key to run command or tab to search'
       }
-      onSearchTextChange={val => {
+      searchText={searchValue}
+      onSearchTextChange={(val) => {
         if (isSearchMode) {
           setSearchValue(val)
           return;

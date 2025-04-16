@@ -11,7 +11,7 @@ export async function runCommandConfig(
 
   await runAppleScript(`
     tell application "System Events"
-      keystroke "${command.commandKeys}" ${mods}
+      keystroke "${command.commandKeys.toLowerCase()}" ${mods}
     end tell
   `);
 
