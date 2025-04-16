@@ -37,7 +37,7 @@ export default function ShowCommands() {
         !commandItems?.length && !isSearchMode
           ? 'Press "enter" to create a new command'
           : isSearchMode
-            ? 'Search for command or press tab to toggle search mode'
+            ? 'Search or press tab to toggle search mode'
             : 'Press key to run command or tab to search'
       }
       searchText={searchValue}
@@ -51,6 +51,16 @@ export default function ShowCommands() {
         if (!command) return;
         runCommandConfig(command)
       }}
+      searchBarAccessory={
+        <List.Dropdown
+          tooltip="Change mode"
+          value={isSearchMode ? 'search' : 'action'}
+          onChange={mode => setIsSearchMode(mode === 'search')}
+        >
+          <List.Dropdown.Item key="action" title="Action mode" value="action" />
+          <List.Dropdown.Item key="search" title="Search mode" value="search" />
+        </List.Dropdown>
+      }
     >
       {!commandItems?.length ? (
         <List.EmptyView
