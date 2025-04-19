@@ -39,9 +39,26 @@ export default function CreateCommand({ id }: CreateCommandProps) {
     loadConfig()
   }, [])
 
-
-  const { handleSubmit, itemProps: items, setValue } = useForm<Omit<CommandConfig, 'id'>>({
+  const { handleSubmit, itemProps: items, setValue, setValidationError } = useForm<Omit<CommandConfig, 'id'>>({
     onSubmit: async (values) => {
+      // Check for duplicate shortcut key
+      const allCommands = await storage.getAllCommands();
+      const existingCommand = allCommands.find(
+        cmd => cmd.shortcutKey === values.shortcutKey && (!id || cmd.id !== id)
+      );
+
+      if (existingCommand) {
+        const errorMessage = `A command with shortcut key "${values.shortcutKey}" already exists`
+        setValidationError('shortcutKey', errorMessage)
+        showToast({
+          style: Toast.Style.Failure,
+          title: "Error",
+          message: errorMessage,
+        });
+        return;
+      }
+
+      setValidationError('shortcutKey', undefined)
       if (id) {
         await storage.updateCommand(id, values);
       } else {
@@ -100,7 +117,10 @@ export default function CreateCommand({ id }: CreateCommandProps) {
         placeholder="e.g., p"
         info="Key to trigger command"
         {...items.shortcutKey}
-        onChange={v => setValue('shortcutKey', v.substring(v.length - 1, v.length)?.toUpperCase())}
+        onChange={v => {
+          setValidationError('shortcutKey', undefined)
+          setValue('shortcutKey', v.substring(v.length - 1, v.length)?.toUpperCase())
+        }}
       />
 
       <Form.Separator />

@@ -67,8 +67,6 @@ export async function updateCommand(id: string, updates: Partial<CommandConfig>)
 
     const updatedCommand = { ...command, ...updates };
 
-    console.log({ updatedCommand })
-
     // Save directly with the existing ID instead of calling saveCommand
     const key = `${COMMAND_KEY_PREFIX}${id}`;
     await LocalStorage.setItem(key, JSON.stringify(updatedCommand));
