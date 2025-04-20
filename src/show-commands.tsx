@@ -52,14 +52,16 @@ export default function ShowCommands() {
         runCommandConfig(command)
       }}
       searchBarAccessory={
-        <List.Dropdown
-          tooltip="Change mode"
-          value={isSearchMode ? 'search' : 'action'}
-          onChange={mode => setIsSearchMode(mode === 'search')}
-        >
-          <List.Dropdown.Item key="action" title="Action mode" value="action" />
-          <List.Dropdown.Item key="search" title="Search mode" value="search" />
-        </List.Dropdown>
+        commands.length > 0 ? (
+          <List.Dropdown
+            tooltip="Change mode"
+            value={isSearchMode ? 'search' : 'action'}
+            onChange={mode => setIsSearchMode(mode === 'search')}
+          >
+            <List.Dropdown.Item key="action" title="Action mode" value="action" />
+            <List.Dropdown.Item key="search" title="Search mode" value="search" />
+          </List.Dropdown>
+        ) : undefined
       }
     >
       {!commandItems?.length ? (
@@ -76,14 +78,16 @@ export default function ShowCommands() {
           }
           actions={
             <ActionPanel>
-              <Action
-                key='create-command'
-                title="Create command"
-                onAction={() => push(<CreateCommand />, loadData)}
-              />
+              {commands.length === 0 && (
+                <Action
+                  key='create-command'
+                  title="Create Command"
+                  onAction={() => push(<CreateCommand />, loadData)}
+                />
+              )}
               <Action
                 key='toggle-search'
-                title="Toggle search mode"
+                title="Toggle Search"
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
               />
@@ -104,18 +108,18 @@ export default function ShowCommands() {
             <ActionPanel>
               <Action
                 key='run-command'
-                title="Run command"
+                title="Run Command"
                 onAction={() => runCommandConfig(command)}
               />
               <Action
                 key='edit-command'
-                title="Edit command"
+                title="Edit Command"
                 shortcut={{ modifiers: ['ctrl'], key: "e" }}
                 onAction={() => push(<CreateCommand id={command.id} />, loadData)}
               />
               <Action
                 key='delete-command'
-                title="Delete command"
+                title="Delete Command"
                 shortcut={{ modifiers: ['ctrl'], key: "x" }}
                 onAction={async () => {
                   const deleteConfirmation = {
@@ -130,13 +134,13 @@ export default function ShowCommands() {
               />
               <Action
                 key='create-new-command'
-                title="Create new command"
+                title="Create Command"
                 shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
                 onAction={() => push(<CreateCommand />, loadData)}
               />
               <Action
                 key='toggle-search'
-                title="Toggle search mode"
+                title="Toggle Search"
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
               />
