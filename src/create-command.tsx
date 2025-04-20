@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
 import { CommandConfig, storage } from "../utils";
+import CreateCategory from "./create-category";
 
 const modifierOptions = [
   ['command', 'Command (⌘)'],
@@ -17,6 +18,7 @@ interface CreateCommandProps {
 export default function CreateCommand({ id }: CreateCommandProps) {
   const { pop } = useNavigation()
   const [loading, setLoading] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState<string>();
 
   async function loadConfig() {
     setLoading(true);
@@ -93,6 +95,12 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       actions={
         <ActionPanel>
           <Action.SubmitForm title="Submit" onSubmit={handleSubmit} icon={Icon.Check} />
+          <Action.Push
+            title="Create Category"
+            icon={Icon.Plus}
+            shortcut={{ modifiers: ["cmd"], key: "n" }}
+            target={<CreateCategory />}
+          />
         </ActionPanel>
       }
     >
@@ -143,6 +151,17 @@ export default function CreateCommand({ id }: CreateCommandProps) {
         {...items.commandKeys}
         onChange={v => setValue('commandKeys', v.toUpperCase())}
       />
+      <Form.Separator />
+      <Form.Dropdown
+        id="category"
+        title="Category"
+        placeholder="Select a category"
+        value={selectedCategory}
+        onChange={setSelectedCategory}
+      >
+        {/* TODO: Populate categories */}
+      </Form.Dropdown>
+      <Form.Description text="Press ⌘+N to create a new category" />
     </Form>
   );
 }
