@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
+import { storage } from "../utils";
 
 interface CategoryForm {
   title: string;
@@ -11,13 +12,21 @@ export default function CreateCategory() {
 
   const { handleSubmit, itemProps: items, setValue, setValidationError } = useForm<CategoryForm>({
     onSubmit: async (values) => {
-      // TODO: implement save logic for categories
-      showToast({
-        style: Toast.Style.Success,
-        title: "Category Saved",
-        message: `Category "${values.title}" saved`,
-      });
-      pop();
+      try {
+        await storage.saveCategory(values);
+        showToast({
+          style: Toast.Style.Success,
+          title: "Category Saved",
+          message: `Category "${values.title}" saved`,
+        });
+        pop();
+      } catch (error) {
+        showToast({
+          style: Toast.Style.Failure,
+          title: "Error",
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
     },
     validation: {
       title: FormValidation.Required,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
-import { CommandConfig, storage } from "../utils";
+import { CommandConfig, CategoryConfig, storage } from "../utils";
 import CreateCategory from "./create-category";
 
 const modifierOptions = [
@@ -18,28 +18,7 @@ interface CreateCommandProps {
 export default function CreateCommand({ id }: CreateCommandProps) {
   const { pop } = useNavigation()
   const [loading, setLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState<string>();
-
-  async function loadConfig() {
-    setLoading(true);
-
-    const command = id ? await storage.getCommand(id) : null;
-    if (!id || !command) {
-      setLoading(false)
-      return;
-    }
-
-    setValue('title', command.title)
-    setValue('description', command.description)
-    setValue('shortcutKey', command.shortcutKey)
-    setValue('modifiers', command.modifiers)
-    setValue('commandKeys', command.commandKeys)
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    loadConfig()
-  }, [])
+  const [categories, setCategories] = useState<CategoryConfig[]>([]);
 
   const { handleSubmit, itemProps: items, setValue, setValidationError } = useForm<Omit<CommandConfig, 'id'>>({
     onSubmit: async (values) => {
@@ -86,8 +65,37 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       },
       modifiers: FormValidation.Required,
       commandKeys: FormValidation.Required,
+      category: FormValidation.Required,
     },
   });
+
+  async function loadConfig() {
+    setLoading(true);
+
+    const command = id ? await storage.getCommand(id) : null;
+    if (!id || !command) {
+      setLoading(false)
+      return;
+    }
+
+    setValue('title', command.title)
+    setValue('description', command.description)
+    setValue('shortcutKey', command.shortcutKey)
+    setValue('modifiers', command.modifiers)
+    setValue('commandKeys', command.commandKeys)
+    setValue('category', command.category)
+    setLoading(false)
+  }
+
+  async function loadCategories() {
+    const cats = await storage.getAllCategories();
+    setCategories(cats);
+  }
+
+  useEffect(() => {
+    loadConfig();
+    loadCategories();
+  }, []);
 
   return (
     <Form
@@ -153,13 +161,13 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       />
       <Form.Separator />
       <Form.Dropdown
-        id="category"
-        title="Category"
-        placeholder="Select a category"
-        value={selectedCategory}
-        onChange={setSelectedCategory}
+      title="Category"
+        {...items.category}
+        onChange={(value) => setValue('category', value)}
       >
-        {/* TODO: Populate categories */}
+        {categories.map((category) => (
+          <Form.Dropdown.Item key={category.id} value={category.id} title={category.title} />
+        ))}
       </Form.Dropdown>
       <Form.Description text="Press ⌘+N to create a new category" />
     </Form>
