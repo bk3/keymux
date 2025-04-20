@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Action, ActionPanel, List, confirmAlert, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, List, confirmAlert, useNavigation, Icon } from "@raycast/api";
 import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
 
@@ -82,12 +82,15 @@ export default function ShowCommands() {
                 <Action
                   key='create-command'
                   title="Create Command"
+                  icon={Icon.Plus}
+                  shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
                   onAction={() => push(<CreateCommand />, loadData)}
                 />
               )}
               <Action
                 key='toggle-search'
                 title="Toggle Search"
+                icon={Icon.MagnifyingGlass}
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
               />
@@ -109,17 +112,20 @@ export default function ShowCommands() {
               <Action
                 key='run-command'
                 title="Run Command"
+                icon={Icon.Play}
                 onAction={() => runCommandConfig(command)}
               />
               <Action
                 key='edit-command'
                 title="Edit Command"
+                icon={Icon.Pencil}
                 shortcut={{ modifiers: ['ctrl'], key: "e" }}
                 onAction={() => push(<CreateCommand id={command.id} />, loadData)}
               />
               <Action
                 key='delete-command'
                 title="Delete Command"
+                icon={Icon.Trash}
                 shortcut={{ modifiers: ['ctrl'], key: "x" }}
                 onAction={async () => {
                   const deleteConfirmation = {
@@ -135,12 +141,14 @@ export default function ShowCommands() {
               <Action
                 key='create-new-command'
                 title="Create Command"
+                icon={Icon.Plus}
                 shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
                 onAction={() => push(<CreateCommand />, loadData)}
               />
               <Action
                 key='toggle-search'
                 title="Toggle Search"
+                icon={Icon.MagnifyingGlass}
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
               />
