@@ -21,7 +21,7 @@ export async function saveCommand(data: Omit<CommandConfig, 'id'>): Promise<void
       ids.push(command.id);
       await LocalStorage.setItem(COMMAND_IDS_KEY, JSON.stringify(ids));
     }
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to save command: ${data.title}`);
   }
 }
@@ -31,7 +31,7 @@ export async function getCommand(id: string): Promise<CommandConfig | null> {
     const key = `${COMMAND_KEY_PREFIX}${id}`;
     const data = await LocalStorage.getItem(key);
     return data && typeof data === 'string' ? JSON.parse(data) : null;
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to retrieve command: ${id}`);
   }
 }
@@ -40,7 +40,7 @@ export async function getCommandIds(): Promise<string[]> {
   try {
     const data = await LocalStorage.getItem(COMMAND_IDS_KEY);
     return data && typeof data === 'string' ? JSON.parse(data) : [];
-  } catch (error) {
+  } catch {
     throw new Error("Unable to retrieve command IDs");
   }
 }
@@ -56,7 +56,7 @@ export async function getAllCommands(): Promise<CommandConfig[]> {
 
     return results.filter((command): command is CommandConfig =>
       command !== null && command !== undefined);
-  } catch (error) {
+  } catch {
     throw new Error("Unable to retrieve commands");
   }
 }
@@ -91,7 +91,7 @@ export async function deleteCommand(id: string): Promise<void> {
     const ids = await getCommandIds();
     const updatedIds = ids.filter(commandId => commandId !== id);
     await LocalStorage.setItem(COMMAND_IDS_KEY, JSON.stringify(updatedIds));
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to delete command: ${id}`);
   }
 }
@@ -108,7 +108,7 @@ export async function saveCategory(data: Omit<CategoryConfig, 'id'>): Promise<vo
       ids.push(category.id);
       await LocalStorage.setItem(CATEGORY_IDS_KEY, JSON.stringify(ids));
     }
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to save category: ${data.title}`);
   }
 }
@@ -118,7 +118,7 @@ export async function getCategory(id: string): Promise<CategoryConfig | null> {
     const key = `${CATEGORY_KEY_PREFIX}${id}`;
     const data = await LocalStorage.getItem(key);
     return data && typeof data === 'string' ? JSON.parse(data) : null;
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to retrieve category: ${id}`);
   }
 }
@@ -127,7 +127,7 @@ export async function getCategoryIds(): Promise<string[]> {
   try {
     const data = await LocalStorage.getItem(CATEGORY_IDS_KEY);
     return data && typeof data === 'string' ? JSON.parse(data) : [];
-  } catch (error) {
+  } catch {
     throw new Error("Unable to retrieve category IDs");
   }
 }
@@ -140,7 +140,7 @@ export async function getAllCategories(): Promise<CategoryConfig[]> {
     const promises = ids.map((id) => getCategory(id));
     const results = await Promise.all(promises);
     return results.filter((cat): cat is CategoryConfig => cat !== null && cat !== undefined);
-  } catch (error) {
+  } catch {
     throw new Error("Unable to retrieve categories");
   }
 }
@@ -167,7 +167,7 @@ export async function deleteCategory(id: string): Promise<void> {
     const ids = await getCategoryIds();
     const updatedIds = ids.filter((catId) => catId !== id);
     await LocalStorage.setItem(CATEGORY_IDS_KEY, JSON.stringify(updatedIds));
-  } catch (error) {
+  } catch {
     throw new Error(`Unable to delete category: ${id}`);
   }
 }
