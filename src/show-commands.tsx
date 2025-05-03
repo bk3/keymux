@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Action, ActionPanel, List, confirmAlert, useNavigation, Icon, LocalStorage } from "@raycast/api";
 import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
+import CreateCategory from "./create-category";
 
 export default function ShowCommands() {
   const { push } = useNavigation()
@@ -144,8 +145,15 @@ export default function ShowCommands() {
                 key='create-new-command'
                 title="Create Command"
                 icon={Icon.Plus}
-                shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
+                shortcut={{ modifiers: ['ctrl'], key: "n" }}
                 onAction={() => push(<CreateCommand />, loadData)}
+              />
+              <Action
+                key='create-new-category'
+                title="Create Category"
+                icon={Icon.PlusTopRightSquare}
+                shortcut={{ modifiers: ['ctrl'], key: "c" }}
+                onAction={() => push(<CreateCategory />, loadData)}
               />
               <Action
                 key='toggle-search'
