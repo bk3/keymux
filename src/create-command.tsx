@@ -65,16 +65,16 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       },
       modifiers: FormValidation.Required,
       commandKeys: FormValidation.Required,
-      category: FormValidation.Required,
     },
   });
 
   async function loadConfig() {
-    setLoading(true);
+    setLoading(true)
+    const cats = await storage.getAllCategories();
+    setCategories(cats);
 
     const command = id ? await storage.getCommand(id) : null;
     if (!id || !command) {
-      setLoading(false)
       return;
     }
 
@@ -87,14 +87,12 @@ export default function CreateCommand({ id }: CreateCommandProps) {
     setLoading(false)
   }
 
-  async function loadCategories() {
-    const cats = await storage.getAllCategories();
-    setCategories(cats);
-  }
-
   useEffect(() => {
-    loadConfig();
-    loadCategories();
+    try {
+      loadConfig();
+    } catch {
+      setLoading(false)
+    }
   }, []);
 
   return (
@@ -159,18 +157,25 @@ export default function CreateCommand({ id }: CreateCommandProps) {
         {...items.commandKeys}
         onChange={v => setValue('commandKeys', v.toUpperCase())}
       />
+
       <Form.Separator />
+
       <Form.Dropdown
-      title="Category"
+        isLoading={loading}
+        title="Category"
+        placeholder="Select a category"
         {...items.category}
-        onChange={(value) => setValue('category', value)}
       >
-        {categories.map((category) => (
-          <Form.Dropdown.Item key={category.id} value={category.id} title={category.title} />
-        ))}
+        {!loading && (
+          <>
+            <Form.Dropdown.Item key="no-category" value="no-category" title="No Category" />
+            {categories.map((category) => (
+              <Form.Dropdown.Item key={category.id} value={category.id} title={category.title} />
+            ))}
+          </>
+        )}
       </Form.Dropdown>
       <Form.Description text="Press ⌘+N to create a new category" />
     </Form>
   );
 }
-

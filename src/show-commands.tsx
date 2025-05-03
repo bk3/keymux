@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Action, ActionPanel, List, confirmAlert, useNavigation, Icon } from "@raycast/api";
+import { Action, ActionPanel, List, confirmAlert, useNavigation, Icon, LocalStorage } from "@raycast/api";
 import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
 import CreateCommand from './create-command'
 
@@ -35,7 +35,7 @@ export default function ShowCommands() {
       isLoading={loading}
       searchBarPlaceholder={
         !commandItems?.length && !isSearchMode
-          ? 'Press "enter" to create a new command'
+          ? 'Press "enter" to create your first command'
           : isSearchMode
             ? 'Search or press tab to toggle search mode'
             : 'Press key to run command or tab to search'
@@ -87,13 +87,15 @@ export default function ShowCommands() {
                   onAction={() => push(<CreateCommand />, loadData)}
                 />
               )}
-              <Action
-                key='toggle-search'
-                title="Toggle Search"
-                icon={Icon.MagnifyingGlass}
-                shortcut={{ modifiers: [], key: "tab" }}
-                onAction={() => setIsSearchMode(prev => !prev)}
-              />
+              {commands.length !== 0 && (
+                <Action
+                  key='toggle-search'
+                  title="Toggle Search"
+                  icon={Icon.MagnifyingGlass}
+                  shortcut={{ modifiers: [], key: "tab" }}
+                  onAction={() => setIsSearchMode(prev => !prev)}
+                />
+              )}
             </ActionPanel>
           }
         />
@@ -151,6 +153,21 @@ export default function ShowCommands() {
                 icon={Icon.MagnifyingGlass}
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
+              />
+              <Action
+                key='delete-all'
+                title="Delete All"
+                icon={Icon.Trash}
+                onAction={async () => {
+                  const deleteConfirmation = {
+                    title: 'Delete all data?',
+                    message: 'Are you sure you want to do this? All of your data will be deleted. This action cannot be undone.'
+                  };
+                  if (await confirmAlert(deleteConfirmation)) {
+                    await LocalStorage.clear()
+                    await loadData()
+                  }
+                }}
               />
             </ActionPanel>
           }
