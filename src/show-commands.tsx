@@ -38,7 +38,7 @@ export default function ShowCommands() {
         !commandItems?.length && !isSearchMode
           ? 'Press "enter" to create your first command'
           : isSearchMode
-            ? 'Search or press tab to toggle search mode'
+            ? 'Search or press tab to toggle actions'
             : 'Press key to run command or tab to search'
       }
       searchText={searchValue}
@@ -56,6 +56,7 @@ export default function ShowCommands() {
         commands.length > 0 ? (
           <List.Dropdown
             tooltip="Change mode"
+            placeholder="Select mode"
             value={isSearchMode ? 'search' : 'action'}
             onChange={mode => setIsSearchMode(mode === 'search')}
           >
@@ -156,9 +157,9 @@ export default function ShowCommands() {
                 onAction={() => push(<CreateCategory />, loadData)}
               />
               <Action
-                key='toggle-search'
-                title="Toggle Search"
-                icon={Icon.MagnifyingGlass}
+                key='toggle-mode'
+                title={isSearchMode ? 'Toggle Actions' : 'Toggle Search'}
+                icon={isSearchMode ? Icon.BullsEye : Icon.MagnifyingGlass}
                 shortcut={{ modifiers: [], key: "tab" }}
                 onAction={() => setIsSearchMode(prev => !prev)}
               />
