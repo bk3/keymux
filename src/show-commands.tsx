@@ -1,22 +1,27 @@
-import { List } from "@raycast/api";
+import { List, useNavigation } from "@raycast/api";
 import EmptyCommandsView from "../ui/empty-commands-list";
 import useCommandsListData from "../utils/use-commands-list-data";
 import { CategoryConfig, CommandConfig, runCommandConfig } from "../utils";
 import { CategoryItem } from "../ui/list-items/category-item";
 import { CommandItem } from "../ui/list-items/command-item";
 
-export default function ShowCommands() {
+interface ShowCommandsProps {
+  category?: string;
+}
+
+export default function ShowCommands({ category }: ShowCommandsProps) {
   const { 
     loading, 
     isSearchMode, 
     setIsSearchMode, 
     searchValue, 
     setSearchValue, 
-    commandListItems, 
-    commands,
-    // categories, 
+    hasCommands,
+    listItems, 
     loadData 
-  } = useCommandsListData()
+  } = useCommandsListData(category)
+
+  const { push } = useNavigation()
 
   const sharedListItemProps = {
     loadData,
@@ -30,7 +35,7 @@ export default function ShowCommands() {
       searchBarPlaceholder={
         loading 
           ? 'Loading...' 
-          : !commands?.length
+          : !hasCommands
             ? 'Press "enter" to create your first command'
             : isSearchMode
               ? 'Search or press tab to toggle actions'
@@ -43,12 +48,16 @@ export default function ShowCommands() {
           return;
         }
 
-        const command = commands.filter(c => c.shortcutKey === val.toUpperCase())?.[0];
-        if (!command) return;
-        runCommandConfig(command)
+        const item = listItems.filter(c => c.shortcutKey === val.toUpperCase())?.[0];
+        if (!item) return;
+        if (item.type === 'category') {
+          push(<ShowCommands category={item.id} />)
+        } else {
+          runCommandConfig(item as CommandConfig)
+        }
       }}
       searchBarAccessory={
-        loading || commands?.length === 0 ? undefined : (
+        loading || !hasCommands ? undefined : (
           <List.Dropdown
             tooltip="Change mode"
             placeholder="Select mode"
@@ -61,15 +70,15 @@ export default function ShowCommands() {
         )
       }
     >
-      {loading ? (<></>) : !commandListItems?.length ? (
+      {loading ? (<></>) : !listItems?.length ? (
         <EmptyCommandsView 
           searchValue={searchValue} 
-          commands={commands} 
+          hasCommands={hasCommands}
           loadData={loadData} 
           isSearchMode={isSearchMode}
           setIsSearchMode={setIsSearchMode} 
         />
-      ) : commandListItems.map((item) => (
+      ) : listItems.map((item) => (
         item.type === 'category' ? (
           <CategoryItem 
             key={item.id}

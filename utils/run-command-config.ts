@@ -1,9 +1,9 @@
 import { runAppleScript } from '@raycast/utils';
 import { closeMainWindow } from '@raycast/api';
-import { CategoryConfig, CommandConfig } from './types'
+import { CommandConfig } from './types'
 
 export async function runCommandConfig(
-  command: CommandConfig | CategoryConfig
+  command: CommandConfig
 ): Promise<void> {
   const modifiers = command.modifiers.length > 0
     ? `using {${command.modifiers.join(" down, ")} down}`

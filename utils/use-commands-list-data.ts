@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { CommandConfig, CategoryConfig } from "./types"
 import * as storage from "./storage"
 
-export default function useCommandsListData() {
+export default function useCommandsListData(category?: string) {
   const [loading, setLoading] = useState(true)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -22,16 +22,23 @@ export default function useCommandsListData() {
     loadData()
   }, [])
 
-  const commandListItems: (CommandConfig | CategoryConfig)[] = useMemo(() => {
-    const commandsWithoutCategory = commands.filter(c => !c.category || c.category === 'no-category')
-    const items = [...categories, ...commandsWithoutCategory]
+  const listItems: (CommandConfig | CategoryConfig)[] = useMemo(() => {
+    let items = [];
+
+    if (!category) {
+      const commandsWithoutCategory = commands.filter(c => !c.category || c.category === 'no-category')
+      items = [...categories, ...commandsWithoutCategory]
+    } else {
+      items = commands.filter(c => c.category === category)
+    }
+
     if (!searchValue?.length) return items;
 
     return items.filter(i => (
       i.title.toLowerCase().includes(searchValue)
       || i.description.toLowerCase().includes(searchValue)
     ))
-  }, [searchValue, commands, categories])
+  }, [searchValue, commands, categories, category])
 
   return {
     loading,
@@ -39,9 +46,8 @@ export default function useCommandsListData() {
     setIsSearchMode,
     searchValue,
     setSearchValue,
-    commands,
-    commandListItems,
-    categories,
+    hasCommands: commands.length > 0,
+    listItems,
     loadData
   }
 }

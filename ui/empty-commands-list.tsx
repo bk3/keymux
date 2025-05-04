@@ -1,19 +1,18 @@
 import { Action, ActionPanel, List, Icon } from "@raycast/api";
 import CreateCommand from "../src/create-command";
-import { CommandConfig } from "../utils";
 
 interface EmptyCommandsViewProps {
     searchValue: string; 
-    commands: CommandConfig[];
-    loadData: () => void;
+    hasCommands: boolean;
+    loadData: () => Promise<void>;
     isSearchMode: boolean;
     setIsSearchMode: (isSearchMode: boolean) => void;
 }
 
 export default function EmptyCommandsView({ 
-    searchValue, 
-    commands, 
     loadData, 
+    hasCommands,
+    searchValue, 
     isSearchMode,
     setIsSearchMode 
 }: EmptyCommandsViewProps) {
@@ -31,7 +30,7 @@ export default function EmptyCommandsView({
         }
         actions={
         <ActionPanel>
-            {commands.length === 0 && (
+            {!hasCommands && (
             <Action.Push
                 key='create-command'
                 title="Create Command"
@@ -41,7 +40,7 @@ export default function EmptyCommandsView({
                 onPop={loadData}
             />
             )}
-            {commands.length !== 0 && (
+            {hasCommands && (
             <Action
                 key='toggle-search'
                 title="Toggle Search"

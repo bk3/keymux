@@ -1,17 +1,19 @@
 import { Action, ActionPanel, Icon, confirmAlert } from "@raycast/api";
-import { runCommandConfig, storage } from "../../utils";
+import { storage } from "../../utils";
 import { CategoryItemProps } from "./category-item";
 import { SharedActions } from "./shared-actions";
 import CreateCategory from "../../src/create-category";
+import ShowCommands from "../../src/show-commands";
 
 export function CategoryActions({ category, loadData, isSearchMode, setIsSearchMode }: CategoryItemProps) {
   return (
     <ActionPanel>
-      <Action
+      <Action.Push
         key='open-category'
         title="Open Category"
-        icon={Icon.Play}
-        onAction={() => runCommandConfig(category)}
+        icon={Icon.Folder}
+        shortcut={{ modifiers: ['ctrl'], key: "e" }}
+        target={<ShowCommands category={category.id} />}
       />
       <Action.Push
         key='edit-category'
