@@ -5,10 +5,12 @@ import { storage } from "../utils";
 interface CategoryForm {
   title: string;
   shortcutKey: string;
+  description: string;
 }
 
-export default function CreateCategory() {
+export default function CreateCategory({ id }: { id?: string }) {
   const { pop } = useNavigation();
+  console.log('category id', id)
 
   const { handleSubmit, itemProps: items, setValue, setValidationError } = useForm<CategoryForm>({
     onSubmit: async (values) => {
@@ -54,6 +56,13 @@ export default function CreateCategory() {
         placeholder="Enter category title"
         info="Title of the category"
         {...items.title}
+      />
+
+      <Form.TextField
+        title="Description"
+        placeholder="Enter category description"
+        info="Optional description for this category"
+        {...items.description}
       />
 
       <Form.Separator />

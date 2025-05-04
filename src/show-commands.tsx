@@ -1,45 +1,40 @@
-import { useEffect, useMemo, useState } from "react";
-import { Action, ActionPanel, List, confirmAlert, useNavigation, Icon, LocalStorage } from "@raycast/api";
-import { CommandConfig, getModifierGlyph, runCommandConfig, storage } from "../utils";
-import CreateCommand from './create-command'
-import CreateCategory from "./create-category";
+import { List } from "@raycast/api";
+import EmptyCommandsView from "../ui/empty-commands-list";
+import useCommandsListData from "../utils/use-commands-list-data";
+import { CategoryConfig, CommandConfig, runCommandConfig } from "../utils";
+import { CategoryItem } from "../ui/list-items/category-item";
+import { CommandItem } from "../ui/list-items/command-item";
 
 export default function ShowCommands() {
-  const { push } = useNavigation()
-  const [loading, setLoading] = useState(true)
-  const [commands, setCommands] = useState<CommandConfig[]>([])
-  const [isSearchMode, setIsSearchMode] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
+  const { 
+    loading, 
+    isSearchMode, 
+    setIsSearchMode, 
+    searchValue, 
+    setSearchValue, 
+    commandListItems, 
+    commands,
+    // categories, 
+    loadData 
+  } = useCommandsListData()
 
-  async function loadData() {
-    setLoading(true);
-    const allCommands = await storage.getAllCommands()
-    setCommands(allCommands)
-    setLoading(false)
+  const sharedListItemProps = {
+    loadData,
+    isSearchMode,
+    setIsSearchMode,
   }
-
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const commandItems = useMemo(() => {
-    if (!searchValue?.length) return commands;
-
-    return commands.filter(i => (
-      i.title.toLowerCase().includes(searchValue)
-      || i.description.toLowerCase().includes(searchValue)
-    ))
-  }, [searchValue, commands])
 
   return (
     <List
       isLoading={loading}
       searchBarPlaceholder={
-        !commandItems?.length && !isSearchMode
-          ? 'Press "enter" to create your first command'
-          : isSearchMode
-            ? 'Search or press tab to toggle actions'
-            : 'Press key to run command or tab to search'
+        loading 
+          ? 'Loading...' 
+          : !commands?.length
+            ? 'Press "enter" to create your first command'
+            : isSearchMode
+              ? 'Search or press tab to toggle actions'
+              : 'Press key to run command or tab to search'
       }
       searchText={searchValue}
       onSearchTextChange={(val) => {
@@ -53,7 +48,7 @@ export default function ShowCommands() {
         runCommandConfig(command)
       }}
       searchBarAccessory={
-        commands.length > 0 ? (
+        loading || commands?.length === 0 ? undefined : (
           <List.Dropdown
             tooltip="Change mode"
             placeholder="Select mode"
@@ -63,124 +58,31 @@ export default function ShowCommands() {
             <List.Dropdown.Item key="action" title="Action mode" value="action" />
             <List.Dropdown.Item key="search" title="Search mode" value="search" />
           </List.Dropdown>
-        ) : undefined
+        )
       }
     >
-      {!commandItems?.length ? (
-        <List.EmptyView
-          title={
-            searchValue?.length
-              ? 'No matching commands'
-              : 'No commands configured'
-          }
-          description={
-            searchValue?.length
-              ? 'Command matching your search could not be found'
-              : 'Create a new command to get started'
-          }
-          actions={
-            <ActionPanel>
-              {commands.length === 0 && (
-                <Action
-                  key='create-command'
-                  title="Create Command"
-                  icon={Icon.Plus}
-                  shortcut={{ modifiers: ['cmd', 'shift'], key: "enter" }}
-                  onAction={() => push(<CreateCommand />, loadData)}
-                />
-              )}
-              {commands.length !== 0 && (
-                <Action
-                  key='toggle-search'
-                  title="Toggle Search"
-                  icon={Icon.MagnifyingGlass}
-                  shortcut={{ modifiers: [], key: "tab" }}
-                  onAction={() => setIsSearchMode(prev => !prev)}
-                />
-              )}
-            </ActionPanel>
-          }
+      {loading ? (<></>) : !commandListItems?.length ? (
+        <EmptyCommandsView 
+          searchValue={searchValue} 
+          commands={commands} 
+          loadData={loadData} 
+          isSearchMode={isSearchMode}
+          setIsSearchMode={setIsSearchMode} 
         />
-      ) : commandItems.map((command) => (
-        <List.Item
-          key={command.id}
-          title={command.title}
-          subtitle={command.description}
-          accessories={[{
-            text: `${getModifierGlyph(command.modifiers)}${command.commandKeys}`,
-          }, {
-            tag: command.shortcutKey
-          }]}
-          actions={
-            <ActionPanel>
-              <Action
-                key='run-command'
-                title="Run Command"
-                icon={Icon.Play}
-                onAction={() => runCommandConfig(command)}
-              />
-              <Action
-                key='edit-command'
-                title="Edit Command"
-                icon={Icon.Pencil}
-                shortcut={{ modifiers: ['ctrl'], key: "e" }}
-                onAction={() => push(<CreateCommand id={command.id} />, loadData)}
-              />
-              <Action
-                key='delete-command'
-                title="Delete Command"
-                icon={Icon.Trash}
-                shortcut={{ modifiers: ['ctrl'], key: "x" }}
-                onAction={async () => {
-                  const deleteConfirmation = {
-                    title: 'Delete command?',
-                    message: 'Are you sure you want to delete this command configuration? This action cannot be undone.'
-                  };
-                  if (await confirmAlert(deleteConfirmation)) {
-                    await storage.deleteCommand(command.id)
-                    await loadData()
-                  }
-                }}
-              />
-              <Action
-                key='create-new-command'
-                title="Create Command"
-                icon={Icon.Plus}
-                shortcut={{ modifiers: ['ctrl'], key: "n" }}
-                onAction={() => push(<CreateCommand />, loadData)}
-              />
-              <Action
-                key='create-new-category'
-                title="Create Category"
-                icon={Icon.PlusTopRightSquare}
-                shortcut={{ modifiers: ['ctrl'], key: "c" }}
-                onAction={() => push(<CreateCategory />, loadData)}
-              />
-              <Action
-                key='toggle-mode'
-                title={isSearchMode ? 'Toggle Actions' : 'Toggle Search'}
-                icon={isSearchMode ? Icon.BullsEye : Icon.MagnifyingGlass}
-                shortcut={{ modifiers: [], key: "tab" }}
-                onAction={() => setIsSearchMode(prev => !prev)}
-              />
-              <Action
-                key='delete-all'
-                title="Delete All"
-                icon={Icon.Trash}
-                onAction={async () => {
-                  const deleteConfirmation = {
-                    title: 'Delete all data?',
-                    message: 'Are you sure you want to do this? All of your data will be deleted. This action cannot be undone.'
-                  };
-                  if (await confirmAlert(deleteConfirmation)) {
-                    await LocalStorage.clear()
-                    await loadData()
-                  }
-                }}
-              />
-            </ActionPanel>
-          }
-        />
+      ) : commandListItems.map((item) => (
+        item.type === 'category' ? (
+          <CategoryItem 
+            key={item.id}
+            category={item as CategoryConfig}
+            {...sharedListItemProps}
+          />
+        ) : (
+          <CommandItem 
+            key={item.id}
+            command={item as CommandConfig}
+            {...sharedListItemProps}
+          />
+        )
       ))}
     </List>
   );

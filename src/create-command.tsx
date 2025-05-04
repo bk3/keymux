@@ -70,29 +70,31 @@ export default function CreateCommand({ id }: CreateCommandProps) {
 
   async function loadConfig() {
     setLoading(true)
-    const cats = await storage.getAllCategories();
-    setCategories(cats);
-
-    const command = id ? await storage.getCommand(id) : null;
-    if (!id || !command) {
-      return;
-    }
-
-    setValue('title', command.title)
-    setValue('description', command.description)
-    setValue('shortcutKey', command.shortcutKey)
-    setValue('modifiers', command.modifiers)
-    setValue('commandKeys', command.commandKeys)
-    setValue('category', command.category)
-    setLoading(false)
-  }
-
-  useEffect(() => {
     try {
-      loadConfig();
+      const cats = await storage.getAllCategories();
+      setCategories(cats);
+
+      const command = id ? await storage.getCommand(id) : null;
+      if (!id || !command) {
+        setLoading(false)
+        setValue('category', 'no-category')
+        return;
+      }
+
+      setValue('title', command.title)
+      setValue('description', command.description)
+      setValue('shortcutKey', command.shortcutKey)
+      setValue('modifiers', command.modifiers)
+      setValue('commandKeys', command.commandKeys)
+      setValue('category', command.category)
+      setLoading(false)
     } catch {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    loadConfig();
   }, []);
 
   return (
@@ -168,7 +170,7 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       >
         {!loading && (
           <>
-            <Form.Dropdown.Item key="no-category" value="no-category" title="No Category" />
+            <Form.Dropdown.Item key="no-category" value="no-category" title="None" />
             {categories.map((category) => (
               <Form.Dropdown.Item key={category.id} value={category.id} title={category.title} />
             ))}
