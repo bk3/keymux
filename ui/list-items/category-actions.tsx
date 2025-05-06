@@ -12,7 +12,6 @@ export function CategoryActions({ category, loadData, isSearchMode, setIsSearchM
         key='open-category'
         title="Open Category"
         icon={Icon.Folder}
-        shortcut={{ modifiers: ['ctrl'], key: "e" }}
         target={<ShowCommands category={category.id} />}
       />
       <Action.Push
@@ -43,6 +42,7 @@ export function CategoryActions({ category, loadData, isSearchMode, setIsSearchM
           };
           if (await confirmAlert(deleteConfirmation)) {
             await storage.deleteCategory(category.id)
+            await storage.updateCommandsForDeletedCategory(category.id)
             await loadData()
           }
         }}

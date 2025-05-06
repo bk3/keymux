@@ -171,3 +171,19 @@ export async function deleteCategory(id: string): Promise<void> {
     throw new Error(`Unable to delete category: ${id}`);
   }
 }
+
+export async function updateCommandsForDeletedCategory(categoryId: string): Promise<void> {
+  try {
+    const allCommands = await getAllCommands();
+    const commandsToUpdate = allCommands.filter(cmd => cmd.category === categoryId);
+    
+    // Update each command to have no category
+    const updatePromises = commandsToUpdate.map(cmd => 
+      updateCommand(cmd.id, { category: 'no-category' })
+    );
+    
+    await Promise.all(updatePromises);
+  } catch {
+    throw new Error(`Unable to update commands for deleted category: ${categoryId}`);
+  }
+}

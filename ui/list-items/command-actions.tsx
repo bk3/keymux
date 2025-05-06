@@ -3,6 +3,7 @@ import CreateCommand from "../../src/create-command";
 import { storage, runCommandConfig } from "../../utils";
 import { SharedActions } from "./shared-actions";
 import { CommandItemProps } from "./command-item";
+import CreateCategory from "../../src/create-category";
 
 export function CommandActions({ command, loadData, isSearchMode, setIsSearchMode }: CommandItemProps) {
   return (
@@ -44,6 +45,14 @@ export function CommandActions({ command, loadData, isSearchMode, setIsSearchMod
             await loadData()
           }
         }}
+      />
+      <Action.Push
+        key='create-category'
+        title="Create Category"
+        icon={Icon.PlusTopRightSquare}
+        shortcut={{ modifiers: ['ctrl'], key: "c" }}
+        target={<CreateCategory />}
+        onPop={loadData}
       />
       <SharedActions
         loadData={loadData} 
