@@ -8,7 +8,9 @@ import {
   useNavigation,
 } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
-import { storage } from "../utils";
+import { storage, checkForShortcutClash } from "../utils";
+import { useState } from "react";
+import { useEffect } from "react";
 
 interface CategoryForm {
   title: string;
@@ -18,7 +20,7 @@ interface CategoryForm {
 
 export default function CreateCategory({ id }: { id?: string }) {
   const { pop } = useNavigation();
-  console.log("category id", id);
+  const [loading, setLoading] = useState(true);
 
   const {
     handleSubmit,
@@ -28,7 +30,36 @@ export default function CreateCategory({ id }: { id?: string }) {
   } = useForm<CategoryForm>({
     onSubmit: async (values) => {
       try {
-        await storage.saveCategory(values);
+        const allCommands = await storage.getAllCommands();
+        const allCategories = await storage.getAllCategories();
+        
+        const categoryConfig = {
+          type: "category" as const,
+          shortcutKey: values.shortcutKey,
+          id: id
+        };
+
+        const { hasClash, message } = checkForShortcutClash(
+          categoryConfig,
+          allCommands,
+          allCategories
+        );
+
+        if (hasClash) {
+          setValidationError("shortcutKey", message);
+          showToast({
+            style: Toast.Style.Failure,
+            title: "Error",
+            message: message || "Shortcut key already exists"
+          });
+          return;
+        }
+
+        if (id) {
+          await storage.updateCategory(id, values);
+        } else {
+          await storage.saveCategory(values);
+        }
         showToast({
           style: Toast.Style.Success,
           title: "Category Saved",
@@ -56,8 +87,27 @@ export default function CreateCategory({ id }: { id?: string }) {
     },
   });
 
+  async function loadCategoryData() {
+    setLoading(true);
+    try {
+      const category = id ? await storage.getCategory(id) : null;
+      if (!category) return;
+
+      setValue("title", category.title);
+      setValue("description", category.description);
+      setValue("shortcutKey", category.shortcutKey);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCategoryData();
+  }, []);
+
   return (
     <Form
+      isLoading={loading}
       actions={
         <ActionPanel>
           <Action.SubmitForm

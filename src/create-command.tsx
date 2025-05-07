@@ -9,7 +9,7 @@ import {
   useNavigation,
 } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
-import { CommandConfig, CategoryConfig, storage } from "../utils";
+import { CommandConfig, CategoryConfig, storage, checkForShortcutClash } from "../utils";
 import CreateCategory from "./create-category";
 
 const modifierOptions = [
@@ -35,20 +35,28 @@ export default function CreateCommand({ id }: CreateCommandProps) {
     setValidationError,
   } = useForm<Omit<CommandConfig, "id">>({
     onSubmit: async (values) => {
-      // Check for duplicate shortcut key
       const allCommands = await storage.getAllCommands();
-      const existingCommand = allCommands.find(
-        (cmd) =>
-          cmd.shortcutKey === values.shortcutKey && (!id || cmd.id !== id),
+      const allCategories = await storage.getAllCategories();
+      
+      const commandConfig = {
+        type: "command" as const,
+        shortcutKey: values.shortcutKey,
+        category: values.category,
+        id: id
+      };
+
+      const { hasClash, message } = checkForShortcutClash(
+        commandConfig,
+        allCommands,
+        allCategories
       );
 
-      if (existingCommand) {
-        const errorMessage = `A command with shortcut key "${values.shortcutKey}" already exists`;
-        setValidationError("shortcutKey", errorMessage);
+      if (hasClash) {
+        setValidationError("shortcutKey", message);
         showToast({
           style: Toast.Style.Failure,
           title: "Error",
-          message: errorMessage,
+          message: message || "Shortcut key already exists"
         });
         return;
       }
@@ -82,33 +90,29 @@ export default function CreateCommand({ id }: CreateCommandProps) {
     },
   });
 
-  async function loadConfig() {
+  async function loadCommandData() {
     setLoading(true);
     try {
       const cats = await storage.getAllCategories();
       setCategories(cats);
 
       const command = id ? await storage.getCommand(id) : null;
-      if (!id || !command) {
-        setLoading(false);
-        setValue("category", "no-category");
-        return;
-      }
+      setValue("category", command?.category || "no-category");
+
+      if (!id || !command) return;
 
       setValue("title", command.title);
       setValue("description", command.description);
       setValue("shortcutKey", command.shortcutKey);
       setValue("modifiers", command.modifiers);
       setValue("commandKeys", command.commandKeys);
-      setValue("category", command.category);
-      setLoading(false);
-    } catch {
+    } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadConfig();
+    loadCommandData();
   }, []);
 
   return (

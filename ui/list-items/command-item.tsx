@@ -1,7 +1,7 @@
 import { List } from "@raycast/api";
 import { CommandConfig, getModifierGlyph } from "../../utils";
-import { CommandActions } from "./command-actions";
-import { SharedActionsProps } from "./shared-actions";
+import { CommandActions } from "../actions/command-actions";
+import { SharedActionsProps } from "../actions/shared-actions";
 
 export interface CommandItemProps extends SharedActionsProps {
   command: CommandConfig;

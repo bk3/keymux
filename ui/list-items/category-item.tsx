@@ -1,7 +1,7 @@
 import { CategoryConfig } from "../../utils";
 import { List } from "@raycast/api";
-import { CategoryActions } from "./category-actions";
-import { SharedActionsProps } from "./shared-actions";
+import { CategoryActions } from "../actions/category-actions";
+import { SharedActionsProps } from "../actions/shared-actions";
 
 export interface CategoryItemProps extends SharedActionsProps {
   category: CategoryConfig;

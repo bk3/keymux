@@ -2,12 +2,11 @@ import { LocalStorage } from "@raycast/api";
 import { CommandConfig, CategoryConfig } from './types';
 import { generateId } from "./generateId";
 
+/*
+ * Commands
+ */
 const COMMAND_KEY_PREFIX = "command-";
 const COMMAND_IDS_KEY = "command-ids";
-
-// Categories storage constants
-const CATEGORY_KEY_PREFIX = "category-";
-const CATEGORY_IDS_KEY = "category-ids";
 
 export async function saveCommand(data: Omit<CommandConfig, 'id' | 'type'>): Promise<void> {
   try {
@@ -95,6 +94,12 @@ export async function deleteCommand(id: string): Promise<void> {
     throw new Error(`Unable to delete command: ${id}`);
   }
 }
+
+/*
+ * Categories
+ */
+const CATEGORY_KEY_PREFIX = "category-";
+const CATEGORY_IDS_KEY = "category-ids";
 
 export async function saveCategory(data: Omit<CategoryConfig, 'id' | 'type'>): Promise<void> {
   try {
