@@ -10,50 +10,52 @@ interface ShowCommandsProps {
 }
 
 export default function ShowCommands({ category }: ShowCommandsProps) {
-  const { 
-    loading, 
-    isSearchMode, 
-    setIsSearchMode, 
-    searchValue, 
-    setSearchValue, 
+  const {
+    loading,
+    isSearchMode,
+    setIsSearchMode,
+    searchValue,
+    setSearchValue,
     hasCommands,
-    listItems, 
-    loadData 
-  } = useCommandsListData(category)
+    listItems,
+    loadData,
+  } = useCommandsListData(category);
 
-  const { push } = useNavigation()
+  const { push } = useNavigation();
 
   const sharedListItemProps = {
     loadData,
     isSearchMode,
     setIsSearchMode,
-  }
+  };
 
   return (
     <List
       isLoading={loading}
       searchBarPlaceholder={
-        loading 
-          ? 'Loading...' 
+        loading
+          ? "Loading..."
           : !hasCommands
             ? 'Press "enter" to create your first command'
             : isSearchMode
-              ? 'Search or press tab to toggle actions'
-              : 'Press key to run command or tab to search'
+              ? "Search or press tab to toggle actions"
+              : "Press key to run command or tab to search"
       }
       searchText={searchValue}
       onSearchTextChange={(val) => {
         if (isSearchMode) {
-          setSearchValue(val)
+          setSearchValue(val);
           return;
         }
 
-        const item = listItems.filter(c => c.shortcutKey === val.toUpperCase())?.[0];
+        const item = listItems.filter(
+          (c) => c.shortcutKey === val.toUpperCase(),
+        )?.[0];
         if (!item) return;
-        if (item.type === 'category') {
-          push(<ShowCommands category={item.id} />)
+        if (item.type === "category") {
+          push(<ShowCommands category={item.id} />);
         } else {
-          runCommandConfig(item as CommandConfig)
+          runCommandConfig(item as CommandConfig);
         }
       }}
       searchBarAccessory={
@@ -61,38 +63,50 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
           <List.Dropdown
             tooltip="Change mode"
             placeholder="Select mode"
-            value={isSearchMode ? 'search' : 'action'}
-            onChange={mode => setIsSearchMode(mode === 'search')}
+            value={isSearchMode ? "search" : "action"}
+            onChange={(mode) => setIsSearchMode(mode === "search")}
           >
-            <List.Dropdown.Item key="action" title="Action mode" value="action" />
-            <List.Dropdown.Item key="search" title="Search mode" value="search" />
+            <List.Dropdown.Item
+              key="action"
+              title="Action mode"
+              value="action"
+            />
+            <List.Dropdown.Item
+              key="search"
+              title="Search mode"
+              value="search"
+            />
           </List.Dropdown>
         )
       }
     >
-      {loading ? (<></>) : !listItems?.length ? (
-        <EmptyCommandsView 
-          searchValue={searchValue} 
+      {loading ? (
+        <></>
+      ) : !listItems?.length ? (
+        <EmptyCommandsView
+          searchValue={searchValue}
           hasCommands={hasCommands}
-          loadData={loadData} 
+          loadData={loadData}
           isSearchMode={isSearchMode}
-          setIsSearchMode={setIsSearchMode} 
+          setIsSearchMode={setIsSearchMode}
         />
-      ) : listItems.map((item) => (
-        item.type === 'category' ? (
-          <CategoryItem 
-            key={item.id}
-            category={item as CategoryConfig}
-            {...sharedListItemProps}
-          />
-        ) : (
-          <CommandItem 
-            key={item.id}
-            command={item as CommandConfig}
-            {...sharedListItemProps}
-          />
+      ) : (
+        listItems.map((item) =>
+          item.type === "category" ? (
+            <CategoryItem
+              key={item.id}
+              category={item as CategoryConfig}
+              {...sharedListItemProps}
+            />
+          ) : (
+            <CommandItem
+              key={item.id}
+              command={item as CommandConfig}
+              {...sharedListItemProps}
+            />
+          ),
         )
-      ))}
+      )}
     </List>
   );
 }

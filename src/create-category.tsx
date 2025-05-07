@@ -1,4 +1,12 @@
-import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Form,
+  Icon,
+  Toast,
+  showToast,
+  useNavigation,
+} from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
 import { storage } from "../utils";
 
@@ -10,9 +18,14 @@ interface CategoryForm {
 
 export default function CreateCategory({ id }: { id?: string }) {
   const { pop } = useNavigation();
-  console.log('category id', id)
+  console.log("category id", id);
 
-  const { handleSubmit, itemProps: items, setValue, setValidationError } = useForm<CategoryForm>({
+  const {
+    handleSubmit,
+    itemProps: items,
+    setValue,
+    setValidationError,
+  } = useForm<CategoryForm>({
     onSubmit: async (values) => {
       try {
         await storage.saveCategory(values);
@@ -47,7 +60,11 @@ export default function CreateCategory({ id }: { id?: string }) {
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="Save Category" onSubmit={handleSubmit} icon={Icon.Check} />
+          <Action.SubmitForm
+            title="Save Category"
+            onSubmit={handleSubmit}
+            icon={Icon.Check}
+          />
         </ActionPanel>
       }
     >
@@ -79,4 +96,4 @@ export default function CreateCategory({ id }: { id?: string }) {
       />
     </Form>
   );
-} 
+}
