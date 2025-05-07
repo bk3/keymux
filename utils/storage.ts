@@ -9,7 +9,7 @@ const COMMAND_IDS_KEY = "command-ids";
 const CATEGORY_KEY_PREFIX = "category-";
 const CATEGORY_IDS_KEY = "category-ids";
 
-export async function saveCommand(data: Omit<CommandConfig, 'id'>): Promise<void> {
+export async function saveCommand(data: Omit<CommandConfig, 'id' | 'type'>): Promise<void> {
   try {
     const id = await generateId()
     const command = { ...data, id, type: 'command' }
@@ -96,7 +96,7 @@ export async function deleteCommand(id: string): Promise<void> {
   }
 }
 
-export async function saveCategory(data: Omit<CategoryConfig, 'id'>): Promise<void> {
+export async function saveCategory(data: Omit<CategoryConfig, 'id' | 'type'>): Promise<void> {
   try {
     const id = await generateId();
     const category: CategoryConfig = { ...data, id, type: 'category' };
