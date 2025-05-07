@@ -130,6 +130,7 @@ export default function CreateCommand({ id }: CreateCommandProps) {
             icon={Icon.Plus}
             shortcut={{ modifiers: ["cmd"], key: "n" }}
             target={<CreateCategory />}
+            onPop={loadCommandData}
           />
         </ActionPanel>
       }
