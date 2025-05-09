@@ -9,7 +9,12 @@ import {
   useNavigation,
 } from "@raycast/api";
 import { FormValidation, useForm } from "@raycast/utils";
-import { CommandConfig, CategoryConfig, storage, checkForShortcutClash } from "../utils";
+import {
+  CommandConfig,
+  CategoryConfig,
+  storage,
+  checkForShortcutClash,
+} from "../utils";
 import CreateCategory from "./create-category";
 
 const modifierOptions = [
@@ -38,18 +43,18 @@ export default function CreateCommand({ id, category }: CreateCommandProps) {
     onSubmit: async (values) => {
       const allCommands = await storage.getAllCommands();
       const allCategories = await storage.getAllCategories();
-      
+
       const commandConfig = {
         type: "command" as const,
         shortcutKey: values.shortcutKey,
         category: values.category,
-        id: id
+        id: id,
       };
 
       const { hasClash, message } = checkForShortcutClash(
         commandConfig,
         allCommands,
-        allCategories
+        allCategories,
       );
 
       if (hasClash) {
@@ -57,7 +62,7 @@ export default function CreateCommand({ id, category }: CreateCommandProps) {
         showToast({
           style: Toast.Style.Failure,
           title: "Error",
-          message: message || "Shortcut key already exists"
+          message: message || "Shortcut key already exists",
         });
         return;
       }

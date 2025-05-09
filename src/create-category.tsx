@@ -32,17 +32,17 @@ export default function CreateCategory({ id }: { id?: string }) {
       try {
         const allCommands = await storage.getAllCommands();
         const allCategories = await storage.getAllCategories();
-        
+
         const categoryConfig = {
           type: "category" as const,
           shortcutKey: values.shortcutKey,
-          id: id
+          id: id,
         };
 
         const { hasClash, message } = checkForShortcutClash(
           categoryConfig,
           allCommands,
-          allCategories
+          allCategories,
         );
 
         if (hasClash) {
@@ -50,7 +50,7 @@ export default function CreateCategory({ id }: { id?: string }) {
           showToast({
             style: Toast.Style.Failure,
             title: "Error",
-            message: message || "Shortcut key already exists"
+            message: message || "Shortcut key already exists",
           });
           return;
         }

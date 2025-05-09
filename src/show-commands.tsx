@@ -1,5 +1,10 @@
 import { List, showToast, useNavigation, Toast } from "@raycast/api";
-import { CategoryConfig, CommandConfig, runCommandConfig, useCommandsListData } from "../utils";
+import {
+  CategoryConfig,
+  CommandConfig,
+  runCommandConfig,
+  useCommandsListData,
+} from "../utils";
 import EmptyCommandsView from "../ui/empty-commands-list";
 import { CategoryItem } from "../ui/list-items/category-item";
 import { CommandItem } from "../ui/list-items/command-item";
@@ -28,7 +33,10 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
     setIsSearchMode,
   };
 
-  const isEmpty = loading || !hasCommands || (!listItems.length && category && !searchValue?.length);
+  const isEmpty =
+    loading ||
+    !hasCommands ||
+    (!listItems.length && category && !searchValue?.length);
 
   return (
     <List
