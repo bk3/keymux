@@ -1,5 +1,5 @@
 import { runAppleScript } from '@raycast/utils';
-import { closeMainWindow } from '@raycast/api';
+import { closeMainWindow, popToRoot } from '@raycast/api';
 import { CommandConfig } from './types'
 
 export async function runCommandConfig(
@@ -19,5 +19,6 @@ export async function runCommandConfig(
     end tell
   `);
 
+  popToRoot();
   closeMainWindow();
 }
