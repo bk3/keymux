@@ -21,9 +21,10 @@ const modifierOptions = [
 
 interface CreateCommandProps {
   id?: string;
+  category?: string;
 }
 
-export default function CreateCommand({ id }: CreateCommandProps) {
+export default function CreateCommand({ id, category }: CreateCommandProps) {
   const { pop } = useNavigation();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<CategoryConfig[]>([]);
@@ -97,7 +98,7 @@ export default function CreateCommand({ id }: CreateCommandProps) {
       setCategories(cats);
 
       const command = id ? await storage.getCommand(id) : null;
-      setValue("category", command?.category || "no-category");
+      setValue("category", command?.category || category || "no-category");
 
       if (!id || !command) return;
 

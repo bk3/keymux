@@ -1,9 +1,9 @@
 import { Action, ActionPanel, Icon, confirmAlert } from "@raycast/api";
-import CreateCommand from "../../src/create-command";
 import { storage, runCommandConfig } from "../../utils";
 import { SharedActions } from "./shared-actions";
-import { CommandItemProps } from "./command-item";
+import { CommandItemProps } from "../list-items/command-item";
 import CreateCategory from "../../src/create-category";
+import CreateCommand from "../../src/create-command";
 
 export function CommandActions({ command, loadData, isSearchMode, setIsSearchMode }: CommandItemProps) {
   return (
@@ -27,7 +27,7 @@ export function CommandActions({ command, loadData, isSearchMode, setIsSearchMod
         title="Create Command"
         icon={Icon.Plus}
         shortcut={{ modifiers: ['ctrl'], key: "n" }}
-        target={<CreateCommand />}
+        target={<CreateCommand category={command.category} />}
         onPop={loadData}
       />
       <Action

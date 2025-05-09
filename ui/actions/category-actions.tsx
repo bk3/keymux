@@ -1,10 +1,10 @@
 import { Action, ActionPanel, Icon, confirmAlert } from "@raycast/api";
 import { storage } from "../../utils";
-import { CategoryItemProps } from "./category-item";
 import { SharedActions } from "./shared-actions";
+import { CategoryItemProps } from "../list-items/category-item";
 import CreateCategory from "../../src/create-category";
 import ShowCommands from "../../src/show-commands";
-
+import CreateCommand from "../../src/create-command";
 export function CategoryActions({ category, loadData, isSearchMode, setIsSearchMode }: CategoryItemProps) {
   return (
     <ActionPanel>
@@ -46,6 +46,14 @@ export function CategoryActions({ category, loadData, isSearchMode, setIsSearchM
             await loadData()
           }
         }}
+      />
+      <Action.Push
+        key='create-command'
+        title="Create Command"
+        icon={Icon.Plus}
+        shortcut={{ modifiers: ['ctrl'], key: "n" }}
+        target={<CreateCommand category={category.id} />}
+        onPop={loadData}
       />
       <SharedActions 
         loadData={loadData} 

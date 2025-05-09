@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { CommandConfig, CategoryConfig } from "./types"
 import * as storage from "./storage"
 
-export default function useCommandsListData(category?: string) {
+export function useCommandsListData(category?: string) {
   const [loading, setLoading] = useState(true)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchValue, setSearchValue] = useState('')

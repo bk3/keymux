@@ -1,7 +1,6 @@
-import { List, useNavigation } from "@raycast/api";
+import { List, showToast, useNavigation, Toast } from "@raycast/api";
+import { CategoryConfig, CommandConfig, runCommandConfig, useCommandsListData } from "../utils";
 import EmptyCommandsView from "../ui/empty-commands-list";
-import useCommandsListData from "../utils/use-commands-list-data";
-import { CategoryConfig, CommandConfig, runCommandConfig } from "../utils";
 import { CategoryItem } from "../ui/list-items/category-item";
 import { CommandItem } from "../ui/list-items/command-item";
 
@@ -29,6 +28,8 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
     setIsSearchMode,
   };
 
+  const isEmpty = loading || !hasCommands || (!listItems.length && category && !searchValue?.length);
+
   return (
     <List
       isLoading={loading}
@@ -37,9 +38,11 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
           ? "Loading..."
           : !hasCommands
             ? 'Press "enter" to create your first command'
-            : isSearchMode
-              ? "Search or press tab to toggle actions"
-              : "Press key to run command or tab to search"
+            : !listItems.length && category
+              ? 'Press "enter" to create a new category command'
+              : isSearchMode
+                ? "Search or press tab to toggle actions"
+                : "Press key to run command or tab to search"
       }
       searchText={searchValue}
       onSearchTextChange={(val) => {
@@ -51,15 +54,17 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
         const item = listItems.filter(
           (c) => c.shortcutKey === val.toUpperCase(),
         )?.[0];
-        if (!item) return;
-        if (item.type === "category") {
+
+        if (!item) {
+          showToast({ title: "Command not found", style: Toast.Style.Failure });
+        } else if (item.type === "category") {
           push(<ShowCommands category={item.id} />);
         } else {
           runCommandConfig(item as CommandConfig);
         }
       }}
       searchBarAccessory={
-        loading || !hasCommands ? undefined : (
+        isEmpty ? undefined : (
           <List.Dropdown
             tooltip="Change mode"
             placeholder="Select mode"
@@ -84,11 +89,15 @@ export default function ShowCommands({ category }: ShowCommandsProps) {
         <></>
       ) : !listItems?.length ? (
         <EmptyCommandsView
+          category={category}
           searchValue={searchValue}
           hasCommands={hasCommands}
           loadData={loadData}
           isSearchMode={isSearchMode}
-          setIsSearchMode={setIsSearchMode}
+          setIsSearchMode={(mode) => {
+            setIsSearchMode(mode);
+            setSearchValue("");
+          }}
         />
       ) : (
         listItems.map((item) =>
