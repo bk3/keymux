@@ -6,19 +6,31 @@ export async function runCommandConfig(
   command: CommandConfig
 ): Promise<void> {
   const modifiers = command.modifiers.length > 0
-    ? `using {${command.modifiers.join(" down, ")} down}`
+    ? `{${command.modifiers.join(" down, ")} down}`
     : "";
 
     const keys = command.modifiers.includes('shift') 
     ? command.commandKeys.toUpperCase() 
     : command.commandKeys.toLowerCase();
 
-  await runAppleScript(`
-    tell application "System Events"
-      keystroke "${keys}" ${modifiers}
+  /*
+  const app = await getFrontmostApplication();
+  const applicationSwitch = `
+    -- Tell Notion to become the frontmost application
+    tell application "${app.name}"
+      activate
     end tell
-  `);
+  `
+  */
 
-  popToRoot();
-  closeMainWindow();
+  const script = `
+    -- Tell System Events to perform the keystroke
+    tell application "System Events"
+      keystroke "${keys}" using ${modifiers}
+    end tell
+  `
+
+  await closeMainWindow();
+  await popToRoot({ clearSearchBar: true });
+  await runAppleScript(script)
 }
